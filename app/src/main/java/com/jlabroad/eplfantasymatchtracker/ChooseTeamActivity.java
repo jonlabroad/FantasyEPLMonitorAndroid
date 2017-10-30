@@ -24,7 +24,6 @@ public class ChooseTeamActivity extends AppCompatActivity {
         //new DeviceConfigurator().writeConfig(GlobalConfig.deviceConfig, getUniqueDeviceId());
 
         GlobalConfig.deviceConfig.addSubscription(1326527, "Pinky and De Bruyne");
-        new DeviceConfigurator().writeConfig(GlobalConfig.deviceConfig, getUniqueDeviceId());
 
         Intent backToMain = new Intent(getApplicationContext(), MatchView.class);
         startActivity(backToMain);

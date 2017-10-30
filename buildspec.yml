@@ -3,7 +3,7 @@ version: 0.2
 phases:
   build:
     commands:
-      - sh ./gradlew assembleDebug
+      - bash ./gradlew assembleDebug
   post_build:
     commands:
       - echo "******** Uploading to S3 ********"

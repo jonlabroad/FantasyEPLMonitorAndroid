@@ -3,6 +3,7 @@ version: 0.2
 phases:
   build:
     commands:
+      - yes | sudo sdkmanager --licenses
       - bash ./gradlew assembleDebug
   post_build:
     commands:

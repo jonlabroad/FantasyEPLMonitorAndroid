@@ -44,6 +44,7 @@ import static com.jlabroad.eplfantasymatchtracker.notification.MatchDataAlertRec
 public class MatchView extends AppCompatActivity {
     public static final String TEAM_CHOOSE_REQUEST = "com.jlabroad.eplfantasymatchtracker.TEAM_CHOOSE_REQUEST";
 
+    private int _leagueId = 31187;
     private int _teamId;
     BroadcastReceiver _matchAlertDataReceiver;
 
@@ -122,7 +123,7 @@ public class MatchView extends AppCompatActivity {
 
     protected String readBucket() throws IOException {
         AmazonS3 s3 = new AmazonS3Client(Credentials.instance().creds);
-        S3Object object = s3.getObject(GlobalConfig.S3Bucket, String.format("MatchInfo_%d_%d", _teamId, GlobalConfig.cloudAppConfig.CurrentGameWeek));
+        S3Object object = s3.getObject(GlobalConfig.S3Bucket, String.format("data/%d/%d/%d/MatchInfo", _leagueId, _teamId, GlobalConfig.cloudAppConfig.CurrentGameWeek));
         InputStream objectData = object.getObjectContent();
         String retString = readTextInputStream(objectData);
         objectData.close();

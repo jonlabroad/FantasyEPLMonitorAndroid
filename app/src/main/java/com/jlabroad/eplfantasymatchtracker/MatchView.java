@@ -20,6 +20,8 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.S3Object;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
+import com.jlabroad.eplfantasymatchtracker.config.CloudAppConfig;
+import com.jlabroad.eplfantasymatchtracker.config.CloudAppConfigProvider;
 import com.jlabroad.eplfantasymatchtracker.config.DeviceConfig;
 import com.jlabroad.eplfantasymatchtracker.config.DeviceConfigurator;
 import com.jlabroad.eplfantasymatchtracker.config.GlobalConfig;
@@ -42,7 +44,6 @@ import static com.jlabroad.eplfantasymatchtracker.notification.MatchDataAlertRec
 public class MatchView extends AppCompatActivity {
     public static final String TEAM_CHOOSE_REQUEST = "com.jlabroad.eplfantasymatchtracker.TEAM_CHOOSE_REQUEST";
 
-    private int _gameweek = 10;
     private int _teamId;
     BroadcastReceiver _matchAlertDataReceiver;
 
@@ -62,6 +63,7 @@ public class MatchView extends AppCompatActivity {
 
         try {
             registerDevice();
+            readAppConfig();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -120,7 +122,7 @@ public class MatchView extends AppCompatActivity {
 
     protected String readBucket() throws IOException {
         AmazonS3 s3 = new AmazonS3Client(Credentials.instance().creds);
-        S3Object object = s3.getObject(GlobalConfig.S3Bucket, String.format("MatchInfo_%d_%d", _teamId, _gameweek));
+        S3Object object = s3.getObject(GlobalConfig.S3Bucket, String.format("MatchInfo_%d_%d", _teamId, GlobalConfig.cloudAppConfig.CurrentGameWeek));
         InputStream objectData = object.getObjectContent();
         String retString = readTextInputStream(objectData);
         objectData.close();
@@ -225,6 +227,10 @@ public class MatchView extends AppCompatActivity {
     private void registerDevice() throws IOException {
         Credentials.instance().initializeCognitoProvider(getApplicationContext());
         GlobalConfig.deviceConfig = new DeviceConfigurator().readConfig(getUniqueDeviceId());
+    }
+
+    private void readAppConfig() {
+        GlobalConfig.cloudAppConfig = new CloudAppConfigProvider().read();
     }
 
     private  String getUniqueDeviceId() {

@@ -3,8 +3,8 @@ version: 0.2
 phases:
   build:
     commands:
-      - yes | sudo sdkmanager --licenses
-      - bash ./gradlew assembleDebug
+      - chmod a+x ./gradlew
+      - ./gradlew assembleDebug
   post_build:
     commands:
       - echo "******** Uploading to S3 ********"

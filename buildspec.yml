@@ -13,7 +13,9 @@ phases:
   post_build:
     commands:
       - echo "******** Uploading to S3 ********"
-      - aws s3 cp app/build/outputs/apk/app-debug.apk s3://fantasyeplmatchtracker/bin/fantasyeplmatchtracker.apk
+      #- aws s3 cp app/build/outputs/apk/app-debug.apk s3://fantasyeplmatchtracker/bin/fantasyeplmatchtracker.apk
+      - rn app/build/outputs/apk/app-debug.apk fantasyeplmatchtracker.apk
+      - aws s3 sync app/build/outputs/apk s3://fantasyeplmatchtracker/bin/  --acl public-read
 artifacts:
   files:
     - app/build/outputs/apk/app-debug.apk

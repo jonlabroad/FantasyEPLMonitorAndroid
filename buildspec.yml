@@ -15,8 +15,8 @@ phases:
       - echo "******** Uploading to S3 ********"
       #- aws s3 cp app/build/outputs/apk/app-debug.apk s3://fantasyeplmatchtracker/bin/fantasyeplmatchtracker.apk
       - mv app/build/outputs/apk/app-debug.apk app/build/outputs/apk/fantasyeplmatchtracker.apk
-      - aws s3 sync app/build/outputs/apk s3://fantasyeplmatchtracker/bin/  --acl public-read
+      #- aws s3 sync app/build/outputs/apk s3://fantasyeplmatchtracker/bin/  --acl public-read
 artifacts:
   files:
-    - app/build/outputs/apk/app-debug.apk
+    - app/build/outputs/apk/fantasyeplmatchtracker.apk
   discard-paths: yes

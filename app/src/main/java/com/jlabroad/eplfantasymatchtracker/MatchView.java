@@ -112,13 +112,15 @@ public class MatchView extends AppCompatActivity {
     }
 
     public void readLatestData() {
+        MatchInfo matchInfo = null;
         try {
             String bucketData = readBucket();
-            MatchInfo matchInfo = new Gson().fromJson(bucketData, MatchInfo.class);
-            printMatchInfo(matchInfo);
+            matchInfo = new Gson().fromJson(bucketData, MatchInfo.class);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        printMatchInfo(matchInfo);
     }
 
     protected String readBucket() throws IOException {
@@ -147,6 +149,12 @@ public class MatchView extends AppCompatActivity {
     }
 
     private void printMatchInfo(MatchInfo info) {
+        LinearLayout linearLayout = (LinearLayout) findViewById(R.id.livescorelayout);
+        if (info == null) {
+            linearLayout.removeAllViewsInLayout();
+            return;
+        }
+
         int team1Id = info.teamIds.get(0);
         int team2Id = info.teamIds.get(1);
         Team team1 = info.teams.get(team1Id);
@@ -173,7 +181,6 @@ public class MatchView extends AppCompatActivity {
                 team1.currentPoints.subScore, team1.currentPoints.startingScore,
                 team2.currentPoints.startingScore, team2.currentPoints.subScore));
 
-        LinearLayout linearLayout = (LinearLayout) findViewById(R.id.livescorelayout);
         linearLayout.removeAllViewsInLayout();
         ArrayList<TextView> textViews = new ArrayList<>();
         for (MatchEvent event : info.matchEvents) {
@@ -190,17 +197,16 @@ public class MatchView extends AppCompatActivity {
 
     private String eventToString(MatchEvent event) {
         if (isEnumerated(event.type)) {
-            return String.format("%s: %d %s %s (%d)", event.dateTime, event.number, event.typeToReadableString(), event.footballer.web_name, event.pointDifference);
+            return String.format("%s: %d %s %s (%d)", event.dateTime, event.number, event.typeToReadableString(), event.footballerName, event.pointDifference);
         }
         else {
-            return String.format("%s: %s %s (%d)", event.dateTime, event.typeToReadableString(), event.footballer.web_name, event.pointDifference);
+            return String.format("%s: %s %s (%d)", event.dateTime, event.typeToReadableString(), event.footballerName, event.pointDifference);
         }
     }
 
     private boolean isEnumerated(MatchEventType type) {
         return  type == MatchEventType.GOAL ||
                 type == MatchEventType.ASSIST ||
-                type == MatchEventType.MINUTES_PLAYED ||
                 type == MatchEventType.YELLOW_CARD ||
                 type == MatchEventType.RED_CARD ||
                 type == MatchEventType.PENALTY_MISS ||

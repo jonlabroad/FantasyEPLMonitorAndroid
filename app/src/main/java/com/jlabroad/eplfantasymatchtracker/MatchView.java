@@ -213,7 +213,8 @@ public class MatchView extends AppCompatActivity {
                 type == MatchEventType.GOALS_CONCEDED ||
                 type == MatchEventType.SAVES ||
                 type == MatchEventType.PENALTY_SAVES ||
-                type == MatchEventType.OWN_GOALS;
+                type == MatchEventType.OWN_GOALS ||
+                type == MatchEventType.MINUTES_PLAYED;
     }
 
     private void createUpdateReceiver() {

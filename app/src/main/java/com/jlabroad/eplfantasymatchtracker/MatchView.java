@@ -125,7 +125,7 @@ public class MatchView extends AppCompatActivity {
 
     protected String readBucket() throws IOException {
         AmazonS3 s3 = new AmazonS3Client(Credentials.instance().creds);
-        S3Object object = s3.getObject(GlobalConfig.S3Bucket, String.format("data/%d/%d/%d/MatchInfo", _leagueId, _teamId, GlobalConfig.cloudAppConfig.CurrentGameWeek));
+        S3Object object = s3.getObject(GlobalConfig.S3Bucket, String.format(GlobalConfig.MatchInfoRootFmt, _leagueId, _teamId, GlobalConfig.cloudAppConfig.CurrentGameWeek));
         InputStream objectData = object.getObjectContent();
         String retString = readTextInputStream(objectData);
         objectData.close();

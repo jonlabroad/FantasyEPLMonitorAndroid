@@ -5,4 +5,5 @@
     <color name="colorAccent">#FF9800</color>
     <color name="myteamcolor">#C4F2AE</color>
     <color name="otherteamcolor">#F2B8AE</color>
+    <color name="bothteamcolor">#F2F093</color>
 </resources>

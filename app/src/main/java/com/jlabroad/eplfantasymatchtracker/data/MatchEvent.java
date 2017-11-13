@@ -1,17 +1,29 @@
 package com.jlabroad.eplfantasymatchtracker.data;
 
-import com.jlabroad.eplfantasymatchtracker.data.eplapi.Footballer;
-
 public class MatchEvent {
     public String dateTime;
     public MatchEventType type;
+    public String typeString;
     public int footballerId;
     public String footballerName;
     public int pointDifference;
     public int number;
     public int teamId;
 
-    public String typeToReadableString() {
+    public boolean appliesToBothTeams() {
+        return teamId < 0;
+    }
+
+    @Override
+    public boolean equals(Object otherObj) {
+        MatchEvent other = (MatchEvent) otherObj;
+        return  type == other.type &&
+                footballerId == other.footballerId &&
+                pointDifference == other.pointDifference &&
+                number == other.number;
+    }
+
+    public String typeToReadableString(int number) {
         String plural = number > 1 ? "s" : "";
         String ePlural = number > 1 ? "es" : "";
         switch (type) {

@@ -186,7 +186,7 @@ public class MatchView extends AppCompatActivity {
         for (MatchEvent event : info.matchEvents) {
             TextView textView = new TextView(this);
             textView.setText(eventToString(event));
-            textView.setBackgroundResource(event.teamId == _teamId ? R.color.myteamcolor : R.color.otherteamcolor);
+            textView.setBackgroundResource(getTeamColor(event.teamId));
             textViews.add(textView);
         }
 
@@ -195,12 +195,20 @@ public class MatchView extends AppCompatActivity {
         }
     }
 
+    private int getTeamColor(int teamId) {
+        int color = R.color.bothteamcolor;
+        if (teamId >= 0) {
+            color = teamId == _teamId ? R.color.myteamcolor : R.color.otherteamcolor;
+        }
+        return getResources().getColor(color);
+    }
+
     private String eventToString(MatchEvent event) {
         if (isEnumerated(event.type)) {
-            return String.format("%s: %d %s %s (%d)", event.dateTime, event.number, event.typeToReadableString(), event.footballerName, event.pointDifference);
+            return String.format("%s: %d %s %s (%d)", event.dateTime, event.number, event.typeToReadableString(event.number), event.footballerName, event.pointDifference);
         }
         else {
-            return String.format("%s: %s %s (%d)", event.dateTime, event.typeToReadableString(), event.footballerName, event.pointDifference);
+            return String.format("%s: %s %s (%d)", event.dateTime, event.typeToReadableString(event.number), event.footballerName, event.pointDifference);
         }
     }
 

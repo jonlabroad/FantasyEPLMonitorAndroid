@@ -200,7 +200,7 @@ public class MatchView extends AppCompatActivity {
         if (teamId >= 0) {
             color = teamId == _teamId ? R.color.myteamcolor : R.color.otherteamcolor;
         }
-        return getResources().getColor(color);
+        return color;
     }
 
     private String eventToString(MatchEvent event) {

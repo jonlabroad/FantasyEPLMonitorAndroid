@@ -28,16 +28,28 @@ import com.jlabroad.eplfantasymatchtracker.config.GlobalConfig;
 import com.jlabroad.eplfantasymatchtracker.data.MatchEvent;
 import com.jlabroad.eplfantasymatchtracker.data.MatchEventType;
 import com.jlabroad.eplfantasymatchtracker.data.MatchInfo;
+import com.jlabroad.eplfantasymatchtracker.data.ProcessedPick;
+import com.jlabroad.eplfantasymatchtracker.data.ProcessedTeam;
 import com.jlabroad.eplfantasymatchtracker.data.Team;
 import com.jlabroad.eplfantasymatchtracker.aws.ApplicationEndpointRegister;
 import com.jlabroad.eplfantasymatchtracker.aws.Credentials;
+import com.jlabroad.eplfantasymatchtracker.data.eplapi.Pick;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TimeZone;
 
 import static com.jlabroad.eplfantasymatchtracker.notification.MatchDataAlertReceiver.EPL_FIREBASE_DATA_MESSAGE;
 
@@ -155,15 +167,23 @@ public class MatchView extends AppCompatActivity {
             return;
         }
 
-        int team1Id = info.teamIds.get(0);
-        int team2Id = info.teamIds.get(1);
-        Team team1 = info.teams.get(team1Id);
-        Team team2 = info.teams.get(team2Id);
+        ArrayList<Integer> teamIds = new ArrayList<>();
+        teamIds.addAll(info.teams.keySet());
+
+        int otherTeamId = teamIds.get(0);
+        if (otherTeamId == _teamId) {
+            otherTeamId = teamIds.get(1);
+        }
+
+        int team1Id = teamIds.get(0);
+        int team2Id = teamIds.get(1);
+        ProcessedTeam team1 = info.teams.get(team1Id);
+        ProcessedTeam team2 = info.teams.get(team2Id);
 
         TextView team1Name = (TextView) findViewById(R.id.team1name);
         TextView team2Name = (TextView) findViewById(R.id.team2name);
-        team1Name.setText(team1.name);
-        team2Name.setText(team2.name);
+        team1Name.setText(team1.standing.entry_name);
+        team2Name.setText(team2.standing.entry_name);
 
         TextView team1Record = (TextView) findViewById(R.id.team1record);
         TextView team2Record = (TextView) findViewById(R.id.team2record);
@@ -178,15 +198,17 @@ public class MatchView extends AppCompatActivity {
 
         TextView scoreLine = (TextView) findViewById(R.id.scoreText);
         scoreLine.setText(String.format("(%d) %d - %d (%d)",
-                team1.currentPoints.subScore, team1.currentPoints.startingScore,
-                team2.currentPoints.startingScore, team2.currentPoints.subScore));
+                team1.score.subScore, team1.score.startingScore,
+                team2.score.startingScore, team2.score.subScore));
 
         linearLayout.removeAllViewsInLayout();
         ArrayList<TextView> textViews = new ArrayList<>();
-        for (MatchEvent event : info.matchEvents) {
+        List<MatchEvent> allEvents = info.allEvents;
+        for (MatchEvent event : allEvents) {
+            List<ProcessedTeam> teamsWithFootballer = getTeamsWithFootballer(event.footballerId, info.teams.values());
             TextView textView = new TextView(this);
-            textView.setText(eventToString(event));
-            textView.setBackgroundResource(getTeamColor(event.teamId));
+            textView.setText(eventToString(event, teamsWithFootballer.get(0)));
+            textView.setBackgroundResource(getEventColor(_teamId, otherTeamId, event.footballerId, info));
             textViews.add(textView);
         }
 
@@ -195,21 +217,60 @@ public class MatchView extends AppCompatActivity {
         }
     }
 
-    private int getTeamColor(int teamId) {
-        int color = R.color.bothteamcolor;
-        if (teamId >= 0) {
-            color = teamId == _teamId ? R.color.myteamcolor : R.color.otherteamcolor;
+    private List<ProcessedTeam> getTeamsWithFootballer(int footballerId, Collection<ProcessedTeam> teams) {
+        List<ProcessedTeam> retList = new ArrayList<>();
+        for (ProcessedTeam team : teams) {
+            if (team.getPick(footballerId) != null) {
+                retList.add(team);
+            }
         }
-        return color;
+        return retList;
     }
 
-    private String eventToString(MatchEvent event) {
+    private int getEventColor(int myTeamId, int otherTeamId, int footballerId, MatchInfo info) {
+        boolean myTeamHasPlayer = teamHasPlayer(myTeamId, footballerId, info);
+        boolean otherTeamHasPlayer = teamHasPlayer(otherTeamId, footballerId, info);
+        if (myTeamHasPlayer && otherTeamHasPlayer) {
+            return R.color.bothteamcolor;
+        }
+        else if (myTeamHasPlayer) {
+            return R.color.myteamcolor;
+        }
+        else if (otherTeamHasPlayer) {
+            return R.color.otherteamcolor;
+        }
+        return R.color.bothteamcolor;
+    }
+
+    private boolean teamHasPlayer(int teamId, int footballerId, MatchInfo info) {
+        for (ProcessedPick pick : info.teams.get(teamId).picks) {
+            if (pick.pick.element == footballerId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String eventToString(MatchEvent event, ProcessedTeam team) {
         if (isEnumerated(event.type)) {
-            return String.format("%s: %d %s %s (%d)", event.dateTime, event.number, event.typeToReadableString(event.number), event.footballerName, event.pointDifference);
+            return String.format("%s: %d %s %s (%d%s)", stringDateToReadableString(event.dateTime),
+                    event.number, event.typeToReadableString(event.number),
+                    event.footballerName, event.pointDifference, getMultiplerString(team, event));
         }
         else {
-            return String.format("%s: %s %s (%d)", event.dateTime, event.typeToReadableString(event.number), event.footballerName, event.pointDifference);
+            return String.format("%s: %s %s (%d%s)", stringDateToReadableString(event.dateTime),
+                    event.typeToReadableString(event.number),
+                    event.footballerName, event.pointDifference, getMultiplerString(team, event));
         }
+    }
+
+    private String getMultiplerString(ProcessedTeam team, MatchEvent event) {
+        String multiplierString = "";
+        ProcessedPick pick = team.getPick(event.footballerId);
+        if (pick.getMultiplier() > 1) {
+            multiplierString = String.format(" x %d", pick.getMultiplier());
+        }
+        return multiplierString;
     }
 
     private boolean isEnumerated(MatchEventType type) {
@@ -251,5 +312,19 @@ public class MatchView extends AppCompatActivity {
 
     private  String getUniqueDeviceId() {
         return Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
+    private String stringDateToReadableString(String fullDate) {
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+        Date date;
+        try {
+            date = fmt.parse(fullDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return "";
+        }
+        SimpleDateFormat newFmt = new SimpleDateFormat("EEE HH:mm");
+        newFmt.setTimeZone(TimeZone.getTimeZone("America/New York"));
+        return newFmt.format(date);
     }
 }

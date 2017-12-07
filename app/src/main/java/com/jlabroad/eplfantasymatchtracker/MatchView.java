@@ -227,6 +227,18 @@ public class MatchView extends AppCompatActivity {
         return retList;
     }
 
+    private boolean isCaptain(int footballerId, Collection<ProcessedTeam> teams) {
+        for (ProcessedTeam team : teams) {
+            ProcessedPick pick = team.getPick(footballerId);
+            if (pick != null) {
+                if (pick.isCaptain()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private int getEventColor(int myTeamId, int otherTeamId, int footballerId, MatchInfo info) {
         boolean myTeamHasPlayer = teamHasPlayer(myTeamId, footballerId, info);
         boolean otherTeamHasPlayer = teamHasPlayer(otherTeamId, footballerId, info);

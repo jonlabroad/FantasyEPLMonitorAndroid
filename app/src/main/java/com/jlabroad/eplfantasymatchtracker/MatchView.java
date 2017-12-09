@@ -174,11 +174,6 @@ public class MatchView extends AppCompatActivity {
         ArrayList<Integer> teamIds = new ArrayList<>();
         teamIds.addAll(info.teams.keySet());
 
-        int otherTeamId = teamIds.get(0);
-        if (otherTeamId == _teamId) {
-            otherTeamId = teamIds.get(1);
-        }
-
         int team1Id = teamIds.get(0);
         int team2Id = teamIds.get(1);
         ProcessedTeam team1 = info.teams.get(team1Id);
@@ -232,18 +227,6 @@ public class MatchView extends AppCompatActivity {
             }
         }
         return retList;
-    }
-
-    private boolean isCaptain(int footballerId, Collection<ProcessedTeam> teams) {
-        for (ProcessedTeam team : teams) {
-            ProcessedPick pick = team.getPick(footballerId);
-            if (pick != null) {
-                if (pick.isCaptain()) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     private int getEventColor(TeamMatchEvent event) {

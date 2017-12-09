@@ -8,7 +8,7 @@ import java.util.Map;
 public class MatchInfo {
     public int gameweek;
     public Map<Integer, ProcessedTeam> teams = new HashMap<>();
-    public List<MatchEvent> allEvents = new ArrayList<>();
+    public List<TeamMatchEvent> allEvents = new ArrayList<>();
 
     public MatchInfo(int gw, ProcessedTeam team1, ProcessedTeam team2) {
         gameweek = gw;
